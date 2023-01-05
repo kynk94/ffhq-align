@@ -1,4 +1,3 @@
-face_alignment
 kornia
 pillow
 torch

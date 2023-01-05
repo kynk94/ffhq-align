@@ -21,7 +21,7 @@ def _load_py_module(filename: str, pkg: str = "ffhq_align") -> ModuleType:
 VERSION = _load_py_module("__version__.py").__version__
 
 
-install_requires = ["torch", "kornia", "face_alignment", "pillow"]
+install_requires = ["torch", "kornia", "pillow"]
 setuptools.setup(
     name="ffhq-align",
     version=VERSION,
@@ -33,7 +33,7 @@ setuptools.setup(
     packages=setuptools.find_packages(include=["ffhq_align*"]),
     install_requires=install_requires,
     extras_require={
-        "all": ["tqdm"],
+        "all": ["tqdm", "face-alignment"],
         "dev": ["isort", "black", "pre-commit", "mypy"],
     },
     python_requires=">=3.8",
