@@ -129,7 +129,7 @@ class Aligner(nn.Module):
 
     @torch.no_grad()
     def forward(
-        self, images: Tensor, output_resolution: int = 512
+        self, images: Tensor, resolution: int = 512
     ) -> Tuple[Optional[Tensor], ...]:
         """
         images: (N, C, H, W), range [-1, 1]
@@ -150,7 +150,7 @@ class Aligner(nn.Module):
                 image_align(
                     image=image,
                     landmarks=torch.tensor(landmark).to(image),
-                    resolution=output_resolution,
+                    resolution=resolution,
                     padding_mode=self.padding_mode,
                 )
             )

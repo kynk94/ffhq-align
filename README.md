@@ -49,7 +49,7 @@ aligner = Aligner(padding_mode="blur")
 image = Image.open("samples/input.jpg")
 
 # Aligner returns tuple of aligned_image tensors.
-aligned_image = aligner(image)[0]
+aligned_image = aligner(image, resolution=512)[0]
 ```
 
 ```python
