@@ -1,6 +1,5 @@
 from typing import Any, Callable, List, Optional, Tuple
 
-import face_alignment
 import numpy as np
 import torch
 import torch.nn as nn
@@ -14,6 +13,10 @@ try:
     import dlib
 except ImportError:
     dlib = None
+try:
+    import face_alignment
+except ImportError:
+    face_alignment = None
 
 
 class LandmarkDLIB:
@@ -79,9 +82,15 @@ class LandmarkFA(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.device = torch.device("cpu")
-        self.fa = face_alignment.FaceAlignment(
-            face_alignment.LandmarksType._2D, device=self.device.type, flip_input=False
-        )
+        try:
+            self.fa = face_alignment.FaceAlignment(
+                face_alignment.LandmarksType._2D, device=self.device.type, flip_input=False
+            )
+        except Exception:
+            raise RuntimeError(
+                "face_alignment is not installed. "
+                "Please install it by `pip install face-alignment`."
+            )
 
     def _apply(self, fn: Callable[..., Any]) -> "LandmarkFA":
         if "t" in fn.__code__.co_varnames:
