@@ -62,9 +62,9 @@ def gaussian_blur(
     image = F.pad(image, tuple(reversed(pad)), mode="reflect")
 
     if use_separable:
-        for k in ((kernel_size[0], 1), (1, kernel_size[1])):
+        for separated_k in ((kernel_size[0], 1), (1, kernel_size[1])):
             kernel = TFT._get_gaussian_kernel2d(
-                k, sigma, dtype=torch.float32, device=image.device
+                separated_k, sigma, dtype=torch.float32, device=image.device
             )
             kernel = kernel.expand(image.shape[-3], 1, -1, -1)
             image = F.conv2d(image, kernel, groups=image.shape[-3])
@@ -263,8 +263,8 @@ def image_align(
 
     # Choose oriented crop rectangle.
     f = torch.tensor([-1, 1], dtype=landmarks.dtype, device=landmarks.device)
-    x = eye_to_eye - eye_to_mouth.flip(-1) * f
-    x: Tensor = x / x.norm(dim=-1)
+    x: Tensor = eye_to_eye - eye_to_mouth.flip(-1) * f
+    x = x / x.norm(dim=-1)
     x = x * torch.max(eye_to_eye.norm(dim=-1) * 2.0, eye_to_mouth.norm(dim=-1) * 1.8)
     y = x.flip(-1) * f
     # center

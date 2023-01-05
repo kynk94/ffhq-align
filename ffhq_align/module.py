@@ -58,8 +58,8 @@ class LandmarkDLIB:
         """
         input: (N, 3, H, W), range [-1, 1]
         """
-        if images.ndim == 3:
-            images = images.unsqueeze(0)
+        if input.ndim == 3:
+            input = input.unsqueeze(0)
         C = input.size(1)
         if C == 1:
             input = input.expand(-1, 3, -1, -1)
@@ -97,7 +97,7 @@ class LandmarkFA(nn.Module):
             self.fa.face_detector.face_detector.to(device=self.device)
         return super()._apply(fn)
 
-    def train(self, mode: bool) -> None:
+    def train(self, mode: bool = False) -> "LandmarkFA":
         return super().train(False)
 
     def forward(self, images: Tensor) -> List[Optional[ndarray]]:
@@ -124,13 +124,13 @@ class Aligner(nn.Module):
         self.landmark_model = LandmarkFA()
         self.padding_mode = padding_mode
 
-    def train(self, mode: bool) -> None:
+    def train(self, mode: bool = False) -> "Aligner":
         return super().train(False)
 
     @torch.no_grad()
     def forward(
         self, images: Tensor, output_resolution: int = 512
-    ) -> Tuple[Optional[Tensor]]:
+    ) -> Tuple[Optional[Tensor], ...]:
         """
         images: (N, C, H, W), range [-1, 1]
         """
@@ -141,10 +141,10 @@ class Aligner(nn.Module):
             images = images.float().div(127.5).sub(1.0).unsqueeze(0)
         images = images.to(self.landmark_model.device)
         landmarks = self.landmark_model(images)
-        aligned_images = []
+        aligned_images: List[Optional[Tensor]] = []
         for image, landmark in zip(images, landmarks):
             if landmark is None:
-                aligned_images.append(image)
+                aligned_images.append(None)
                 continue
             aligned_images.append(
                 image_align(
