@@ -33,10 +33,12 @@ optional arguments:
   --output OUTPUT, -o OUTPUT
   --resolution RESOLUTION, -r RESOLUTION
   --batch_size BATCH_SIZE, -b BATCH_SIZE
+                        If all input images resolution is the same, can set batch_size larger than 1.
+  --device DEVICE, -d DEVICE
 ```
 
 ```bash
-> python align.py -i samples -r 512 -b 8
+> python align.py -i samples -r 512 -b 1
 ```
 
 ```python
@@ -47,9 +49,7 @@ from ffhq_align import Aligner
 
 aligner = Aligner(padding_mode="blur")
 image = Image.open("samples/input.jpg")
-
-# Aligner returns tuple of aligned_image tensors.
-aligned_image = aligner(image, resolution=512)[0]
+aligned_image = aligner(image, resolution=512)  # (1, 3, 512, 512)
 ```
 
 ```python

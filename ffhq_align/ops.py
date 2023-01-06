@@ -4,15 +4,13 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional_tensor as TFT
-from kornia.geometry.transform import (get_perspective_transform,
-                                       warp_perspective)
+from kornia.geometry.transform import get_perspective_transform, warp_perspective
 from numpy import ndarray
 from PIL import Image
 from torch import Tensor
 from torch.nn.modules.utils import _reverse_repeat_tuple
 
-from ffhq_align.utils import (FLOAT, INT, normalize_float_tuple,
-                              normalize_int_tuple)
+from ffhq_align.utils import FLOAT, INT, normalize_float_tuple, normalize_int_tuple
 
 
 def to_rgb_array(image: Union[Image.Image, ndarray]) -> ndarray:
@@ -264,8 +262,11 @@ def image_align(
     # Choose oriented crop rectangle.
     f = torch.tensor([-1, 1], dtype=landmarks.dtype, device=landmarks.device)
     x: Tensor = eye_to_eye - eye_to_mouth.flip(-1) * f
-    x = x / x.norm(dim=-1)
-    x = x * torch.max(eye_to_eye.norm(dim=-1) * 2.0, eye_to_mouth.norm(dim=-1) * 1.8)
+    x = x / x.norm(dim=-1, keepdim=True)
+    x = x * torch.max(
+        eye_to_eye.norm(dim=-1, keepdim=True) * 2.0,
+        eye_to_mouth.norm(dim=-1, keepdim=True) * 1.8,
+    )
     y = x.flip(-1) * f
     # center
     c = eye_avg + eye_to_mouth * 0.1

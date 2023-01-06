@@ -32,13 +32,16 @@ class AlignDataset(Dataset):
 
 
 def main() -> None:
+    # fmt: off
     parser = argparse.ArgumentParser(description="Face Alignment")
     parser.add_argument("--input", "-i", type=str, required=True)
     parser.add_argument("--output", "-o", type=str, default="outputs")
     parser.add_argument("--resolution", "-r", type=int, default=512)
-    parser.add_argument("--batch_size", "-b", type=int, default=8)
+    parser.add_argument("--batch_size", "-b", type=int, default=1,
+                        help="If all input images resolution is the same, can set batch_size larger than 1.")
     parser.add_argument("--device", "-d", type=str, default="cuda")
     args = vars(parser.parse_args())
+    # fmt: on
 
     if os.path.isfile(args["input"]):
         images = [args["input"]]
@@ -46,7 +49,7 @@ def main() -> None:
         images = glob.glob(os.path.join(args["input"], "**", "*.*g"), recursive=True)
         images.sort()
 
-    dataset = AlignDataset(images)
+    dataset = AlignDataset(images[620:])
     dataloader = DataLoader(
         dataset,
         batch_size=args["batch_size"],

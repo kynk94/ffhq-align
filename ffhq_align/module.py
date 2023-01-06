@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -84,7 +84,9 @@ class LandmarkFA(nn.Module):
         self.device = torch.device("cpu")
         try:
             self.fa = face_alignment.FaceAlignment(
-                face_alignment.LandmarksType._2D, device=self.device.type, flip_input=False
+                face_alignment.LandmarksType._2D,
+                device=self.device.type,
+                flip_input=False,
             )
         except Exception:
             raise RuntimeError(
@@ -124,6 +126,11 @@ class LandmarkFA(nn.Module):
             raise ValueError(f"Invalid number of channels: {C}")
         images = images.clamp(-1, 1).mul(127.5).add(127.5)
         landmarks = self.fa.get_landmarks_from_batch(images)
+        # If no face detected, face_alignment returns [], not None.
+        # If multiple faces detected, face_alignment returns
+        # array of shape (multiple * 68, 2), not (multiple, 68, 2).
+        # Use the first face only.
+        landmarks = [None if isinstance(l, list) else l[:68] for l in landmarks]
         return landmarks
 
 
@@ -139,17 +146,33 @@ class Aligner(nn.Module):
     @torch.no_grad()
     def forward(
         self, images: Tensor, resolution: int = 512
-    ) -> Tuple[Optional[Tensor], ...]:
+    ) -> Union[Tensor, Tuple[Optional[Tensor], ...]]:
         """
         images: (N, C, H, W), range [-1, 1]
+
+        Return:
+            if all faces are detected:
+                (N, C, resolution, resolution), range [-1, 1]
+            else:
+                tuple((C, resolution, resolution), ..., None), range [-1, 1]
         """
         if isinstance(images, str):
             images = Image.open(images)
         if isinstance(images, Image.Image):
-            images = torch.tensor(np.array(images)).permute(2, 0, 1)
+            images = torch.from_numpy(np.array(images)).permute(2, 0, 1)
             images = images.float().div(127.5).sub(1.0).unsqueeze(0)
         images = images.to(self.landmark_model.device)
         landmarks = self.landmark_model(images)
+        # If all faces are detected, run batch processing
+        if all(l is not None for l in landmarks):
+            landmarks = torch.from_numpy(np.stack(landmarks, 0)).to(images)
+            return image_align(
+                image=images,
+                landmarks=landmarks,
+                resolution=resolution,
+                padding_mode=self.padding_mode,
+            )
+
         aligned_images: List[Optional[Tensor]] = []
         for image, landmark in zip(images, landmarks):
             if landmark is None:
