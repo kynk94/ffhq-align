@@ -49,7 +49,7 @@ def main() -> None:
         images = glob.glob(os.path.join(args["input"], "**", "*.*g"), recursive=True)
         images.sort()
 
-    dataset = AlignDataset(images[620:])
+    dataset = AlignDataset(images)
     dataloader = DataLoader(
         dataset,
         batch_size=args["batch_size"],
