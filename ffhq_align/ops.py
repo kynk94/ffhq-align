@@ -230,6 +230,7 @@ def image_align(
     landmarks: Tensor,
     resolution: INT = 512,
     padding_mode: str = "blur",
+    quad_scale: float = 1.0,
 ):
     """
     image: (N, C, H, W) image tensor
@@ -268,6 +269,9 @@ def image_align(
         eye_to_mouth.norm(dim=-1, keepdim=True) * 1.8,
     )
     y = x.flip(-1) * f
+    if quad_scale != 1.0:
+        x = x * quad_scale
+        y = y * quad_scale
     # center
     c = eye_avg + eye_to_mouth * 0.1
 

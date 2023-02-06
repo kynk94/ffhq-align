@@ -145,10 +145,13 @@ class Aligner(nn.Module):
 
     @torch.no_grad()
     def forward(
-        self, images: Tensor, resolution: int = 512
+        self, images: Tensor, resolution: int = 512, quad_scale: float = 1.0
     ) -> Union[Tensor, Tuple[Optional[Tensor], ...]]:
         """
         images: (N, C, H, W), range [-1, 1]
+        resolution: resolution of output images
+        quad_scale: scale of the bounding box
+            If larger, the face will be smaller in the output image.
 
         Return:
             if all faces are detected:
@@ -171,6 +174,7 @@ class Aligner(nn.Module):
                 landmarks=landmarks,
                 resolution=resolution,
                 padding_mode=self.padding_mode,
+                quad_scale=quad_scale,
             )
 
         aligned_images: List[Optional[Tensor]] = []
