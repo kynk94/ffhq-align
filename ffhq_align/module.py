@@ -84,7 +84,7 @@ class LandmarkFA(nn.Module):
         self.device = torch.device("cpu")
         try:
             self.fa = face_alignment.FaceAlignment(
-                face_alignment.LandmarksType._2D,
+                face_alignment.LandmarksType.TWO_D,
                 device=self.device.type,
                 flip_input=False,
             )
