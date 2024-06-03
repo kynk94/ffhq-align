@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Union, cast
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torchvision.transforms.functional_tensor as TFT
+import torchvision.transforms._functional_tensor as TFT
 from kornia.geometry.transform import get_perspective_transform, warp_perspective
 from numpy import ndarray
 from PIL import Image
